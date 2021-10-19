@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Shaadi</string>
+    <string name="progress_msg">please wait…</string>
+    <string name="unable_to_load">Try after some time!</string>
+    <string name="accept_title">Accept</string>
+    <string name="reject_title">Reject</string>
+    <string name="na"></string>
+    <string name="year_title">yrs</string>
+    <string name="accepted_title">Accepted</string>
+    <string name="rejected_title">Rejected</string>
+</resources>

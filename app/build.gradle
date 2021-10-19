@@ -1,0 +1,89 @@
+apply plugin: 'com.android.application'
+
+def appPropertiesFile = rootProject.file("app-settings.properties")
+def appProperties = new Properties()
+appProperties.load(new FileInputStream(appPropertiesFile))
+
+def keyStorePropertiesFile=rootProject.file("Path_To_KeyStore/keystore.properties")
+def keyStoreProperties=new Properties()
+keyStoreProperties.load(new FileInputStream(keyStorePropertiesFile))
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.app.shaadi"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName appProperties['app.version.name']
+        def buildVariant = getBuildVariant()
+        def environmentPath
+        if ((buildVariant == "Release")) {
+            environmentPath = appProperties["env.path.live"]
+        } else if ((buildVariant == "QA")) {
+            environmentPath = appProperties["env.path.qa"]
+        } else {
+            environmentPath = appProperties["env.path.qa"]
+        }
+        def envPropertiesFile = rootProject.file(environmentPath)
+        def envProperties = new Properties()
+        envProperties.load(new FileInputStream(envPropertiesFile))
+        println("buildVariant = $buildVariant")
+        for (String key : envProperties.keySet()) {
+            buildConfigField "String", key.replaceAll("\\.", "_").toUpperCase(), envProperties[key]
+        }
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+        dataBinding {
+            enabled = true
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility = 1.8
+    }
+    buildToolsVersion = '28.0.1'
+}
+
+
+def getBuildVariant() {
+    for (TaskExecutionRequest t : gradle.getStartParameter().getTaskRequests()) {
+        for (String command : t.args) {
+            if (command.matches(":app:generate(.*)Sources")) {
+                return command.replaceAll(":app:generate(.*)Sources", "\$1")
+            } else if (command.matches(":app:assemble(.*)")) {
+                return command.replaceAll(":app:assemble(.*)", "\$1")
+            }
+        }
+    }
+
+    return "QA"
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "androidx.appcompat:appcompat:$rootProject.appcompatVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$rootProject.appcompatVersion"
+    implementation 'com.google.code.gson:gson:2.8.6'
+
+    implementation "com.google.code.gson:gson:$rootProject.gsonVersion"
+    implementation "com.squareup.retrofit2:retrofit:$rootProject.retrofitVersion"
+    implementation "com.squareup.okhttp3:logging-interceptor:$rootProject.loggingInterceptorVersion"
+    implementation "com.squareup.retrofit2:converter-gson:$rootProject.gsonConvertorVersion"
+    // ViewModel and LiveData
+    implementation "android.arch.lifecycle:extensions:$rootProject.lifecycleVersion"
+    implementation "android.arch.persistence.room:runtime:$rootProject.roomVersion"
+    annotationProcessor "android.arch.persistence.room:compiler:$rootProject.roomVersion"
+    implementation "com.github.bumptech.glide:glide:$rootProject.glideVersion"
+    debugImplementation "com.facebook.stetho:stetho-okhttp3:$rootProject.sethoVersion"
+    implementation "androidx.recyclerview:recyclerview:$rootProject.recyclerViewVersion"
+    implementation "androidx.cardview:cardview:$rootProject.cardViewVersion"
+    implementation "com.github.linger1216:labelview:$rootProject.labelViewVersion"
+}
